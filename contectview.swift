@@ -6,15 +6,11 @@ struct ContentView: View {
     @StateObject private var audioManager = AudioManager()
 
     var body: some View {
-
         ZStack {
-
             Color.black.ignoresSafeArea()
 
             VStack(spacing: 28) {
-
                 VStack(spacing: 6) {
-
                     Text("DUOCAST")
                         .font(.system(size: 32, weight: .bold))
                         .tracking(4)
@@ -31,7 +27,10 @@ struct ContentView: View {
                     title: "STREAM 01",
                     device: "Car Bluetooth",
                     symbol: "car.fill",
-                    volume: $audioManager.streamOneVolume,
+                    volume: Binding(
+                        get: { audioManager.streamOneVolume },
+                        set: { audioManager.setStreamOneVolume($0) }
+                    ),
                     isPlaying: $audioManager.isStreamOnePlaying,
                     onPlayPause: {
                         audioManager.toggleStreamOne()
@@ -42,12 +41,23 @@ struct ContentView: View {
                     title: "STREAM 02",
                     device: "Headphones",
                     symbol: "headphones",
-                    volume: $audioManager.streamTwoVolume,
+                    volume: Binding(
+                        get: { audioManager.streamTwoVolume },
+                        set: { audioManager.setStreamTwoVolume($0) }
+                    ),
                     isPlaying: $audioManager.isStreamTwoPlaying,
                     onPlayPause: {
                         audioManager.toggleStreamTwo()
                     }
                 )
+
+                Button("STOP BOTH STREAMS") {
+                    audioManager.stopAll()
+                }
+                .font(.caption.weight(.semibold))
+                .tracking(1)
+                .foregroundStyle(.white)
+                .padding(.vertical, 12)
 
                 Spacer()
 
@@ -60,7 +70,7 @@ struct ContentView: View {
         .preferredColorScheme(.dark)
         .onAppear {
             audioManager.configureAudioSession()
+            audioManager.loadBundledTracks()
         }
     }
 }
-

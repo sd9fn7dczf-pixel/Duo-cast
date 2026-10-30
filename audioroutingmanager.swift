@@ -7,31 +7,41 @@ import Combine
 final class AudioRoutingManager: ObservableObject {
 
     @Published var availableOutputs: [String] = []
-
     @Published var currentOutput: String = "Unknown"
+    @Published var bluetoothDevices: [String] = []
 
     private let session = AVAudioSession.sharedInstance()
 
     func refreshAudioRoutes() {
 
-        availableOutputs = session.currentRoute.outputs.map {
+        let outputs = session.currentRoute.outputs
+
+        availableOutputs = outputs.map {
             "\($0.portName) (\($0.portType.rawValue))"
         }
 
-        if let output = session.currentRoute.outputs.first {
-            currentOutput = output.portName
-        } else {
-            currentOutput = "iPhone Speaker"
-        }
+        bluetoothDevices = outputs
+            .filter {
+                $0.portType == .bluetoothA2DP ||
+                $0.portType == .bluetoothHFP ||
+                $0.portType == .bluetoothLE
+            }
+            .map { $0.portName }
+
+        currentOutput = outputs.first?.portName ?? "iPhone Speaker"
     }
 
     func printAudioCapabilities() {
 
-        print("DUOCAST AUDIO ROUTES")
+        print("===== DUOCAST AUDIO ROUTES =====")
 
         for output in session.currentRoute.outputs {
-            print("Output: \(output.portName)")
+            print("Device: \(output.portName)")
             print("Type: \(output.portType.rawValue)")
         }
+
+        print("Bluetooth devices: \(bluetoothDevices)")
+        print("================================")
     }
 }
+

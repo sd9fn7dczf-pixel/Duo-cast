@@ -1,4 +1,5 @@
 
+
 import Foundation
 import AVFoundation
 import Combine
@@ -21,25 +22,50 @@ final class AudioManager: ObservableObject {
 
             try session.setCategory(
                 .playback,
-                mode: .default,
-                options: []
+                mode: .default
             )
 
             try session.setActive(true)
 
-            print("DUOCAST audio session ready")
+            print("DUOCAST audio ready")
 
         } catch {
-            print("Audio setup error: \(error)")
+            print("Audio error: \(error)")
         }
     }
 
-    func stopAll() {
-        playerOne?.stop()
-        playerTwo?.stop()
+    func loadStreamOne(url: URL) throws {
+        playerOne = try AVAudioPlayer(contentsOf: url)
+        playerOne?.volume = streamOneVolume
+        playerOne?.prepareToPlay()
+    }
 
-        isStreamOnePlaying = false
-        isStreamTwoPlaying = false
+    func loadStreamTwo(url: URL) throws {
+        playerTwo = try AVAudioPlayer(contentsOf: url)
+        playerTwo?.volume = streamTwoVolume
+        playerTwo?.prepareToPlay()
+    }
+
+    func toggleStreamOne() {
+        guard let player = playerOne else { return }
+
+        if player.isPlaying {
+            player.pause()
+            isStreamOnePlaying = false
+        } else if player.play() {
+            isStreamOnePlaying = true
+        }
+    }
+
+    func toggleStreamTwo() {
+        guard let player = playerTwo else { return }
+
+        if player.isPlaying {
+            player.pause()
+            isStreamTwoPlaying = false
+        } else if player.play() {
+            isStreamTwoPlaying = true
+        }
     }
 
     func setStreamOneVolume(_ value: Float) {
@@ -50,5 +76,13 @@ final class AudioManager: ObservableObject {
     func setStreamTwoVolume(_ value: Float) {
         streamTwoVolume = value
         playerTwo?.volume = value
+    }
+
+    func stopAll() {
+        playerOne?.stop()
+        playerTwo?.stop()
+
+        isStreamOnePlaying = false
+        isStreamTwoPlaying = false
     }
 }

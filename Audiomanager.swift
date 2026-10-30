@@ -1,5 +1,4 @@
 
-
 import Foundation
 import AVFoundation
 import Combine
@@ -19,52 +18,70 @@ final class AudioManager: ObservableObject {
     func configureAudioSession() {
         do {
             let session = AVAudioSession.sharedInstance()
-
-            try session.setCategory(
-                .playback,
-                mode: .default
-            )
-
+            try session.setCategory(.playback, mode: .default)
             try session.setActive(true)
-
             print("DUOCAST audio ready")
-
         } catch {
-            print("Audio error: \(error)")
+            print("Audio session error: \(error)")
         }
     }
 
-    func loadStreamOne(url: URL) throws {
-        playerOne = try AVAudioPlayer(contentsOf: url)
-        playerOne?.volume = streamOneVolume
-        playerOne?.prepareToPlay()
-    }
+    func loadBundledTracks() {
+        guard
+            let urlOne = Bundle.main.url(
+                forResource: "track1",
+                withExtension: "wav"
+            ),
+            let urlTwo = Bundle.main.url(
+                forResource: "track2",
+                withExtension: "wav"
+            )
+        else {
+            print("DUOCAST: Audio files not found in app bundle.")
+            return
+        }
 
-    func loadStreamTwo(url: URL) throws {
-        playerTwo = try AVAudioPlayer(contentsOf: url)
-        playerTwo?.volume = streamTwoVolume
-        playerTwo?.prepareToPlay()
+        do {
+            playerOne = try AVAudioPlayer(contentsOf: urlOne)
+            playerTwo = try AVAudioPlayer(contentsOf: urlTwo)
+
+            playerOne?.volume = streamOneVolume
+            playerTwo?.volume = streamTwoVolume
+
+            playerOne?.prepareToPlay()
+            playerTwo?.prepareToPlay()
+
+            print("DUOCAST: Both tracks loaded.")
+        } catch {
+            print("Audio loading error: \(error)")
+        }
     }
 
     func toggleStreamOne() {
-        guard let player = playerOne else { return }
+        guard let player = playerOne else {
+            print("Stream 01 is not loaded.")
+            return
+        }
 
         if player.isPlaying {
             player.pause()
             isStreamOnePlaying = false
-        } else if player.play() {
-            isStreamOnePlaying = true
+        } else {
+            isStreamOnePlaying = player.play()
         }
     }
 
     func toggleStreamTwo() {
-        guard let player = playerTwo else { return }
+        guard let player = playerTwo else {
+            print("Stream 02 is not loaded.")
+            return
+        }
 
         if player.isPlaying {
             player.pause()
             isStreamTwoPlaying = false
-        } else if player.play() {
-            isStreamTwoPlaying = true
+        } else {
+            isStreamTwoPlaying = player.play()
         }
     }
 
@@ -86,3 +103,5 @@ final class AudioManager: ObservableObject {
         isStreamTwoPlaying = false
     }
 }
+
+

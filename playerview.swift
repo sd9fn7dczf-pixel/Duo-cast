@@ -10,6 +10,8 @@ struct PlayerView: View {
     @Binding var volume: Float
     @Binding var isPlaying: Bool
 
+    let onPlayPause: () -> Void
+
     var body: some View {
 
         VStack(alignment: .leading, spacing: 18) {
@@ -21,7 +23,6 @@ struct PlayerView: View {
                     .foregroundStyle(.white)
 
                 VStack(alignment: .leading, spacing: 5) {
-
                     Text(title)
                         .font(.caption)
                         .foregroundStyle(.gray)
@@ -33,9 +34,7 @@ struct PlayerView: View {
 
                 Spacer()
 
-                Button {
-                    isPlaying.toggle()
-                } label: {
+                Button(action: onPlayPause) {
                     Image(systemName: isPlaying
                           ? "pause.circle.fill"
                           : "play.circle.fill")
@@ -64,3 +63,4 @@ struct PlayerView: View {
         .clipShape(RoundedRectangle(cornerRadius: 22))
     }
 }
+
